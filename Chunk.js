@@ -1,15 +1,15 @@
 export class Chunk {
     constructor () {
-        this.polygons = [];
+        this.islands = [];
     }
 
-    add(node) {
-        this.polygons.push(node);
+    add(island) {
+        this.islands.push(island);
     }
 
     checkForHover(mouseX, mouseY) {
-        for (let i = 0; i < this.polygons.length; i++) {
-            this.polygons[i].hover(mouseX, mouseY);
+        for (let i = 0; i < this.islands.length; i++) {
+            this.islands[i].hover(mouseX, mouseY);
         }
     }
 }

@@ -13,7 +13,6 @@ export class Polygon{
         this.prev = null;
         this.neighbours = [];
         this.island = null;
-        this.assignToChunks();
     }
 
     // Draws the polygon inside on the canvas
@@ -75,137 +74,7 @@ export class Polygon{
             this.next.add(polygon);
         }
     }
-
-    assignToChunks() {
-        let chunkX = this.x - (this.x % chunkSize) + chunkSize / 2;
-        let chunkY = this.y - (this.y % chunkSize) + chunkSize / 2;
-        
-        let currentChunkValue = chunkMap.get([chunkX, chunkY].join(':'));
-        currentChunkValue.add(this);
-        chunkMap.set([chunkX, chunkY], currentChunkValue);
-
-        // Check other surrounding chunks, in case the polygon overlaps with neighbour chunks
-        // Top left
-        if (this.x - this.r < chunkX - chunkSize / 2 &&
-            this.y - this.r < chunkY - chunkSize / 2) {
-            const topLeftCornerX = chunkX - chunkSize / 2;
-            const topLeftCornerY = chunkY - chunkSize / 2;
-            const polyLeftCornerPosX = this.x - this.r;
-            const polyTopLeftCornerPosY = this.y - this.r;        
-            const xProportion = (topLeftCornerX - polyLeftCornerPosX) / (this.r / 2);
-            const yProportion = (topLeftCornerY - polyTopLeftCornerPosY) / this.r;
-            if (xProportion + yProportion >= 1) {
-                let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                currentChunkValue.add(this);
-                chunkMap.set([chunkX, chunkY], currentChunkValue);
-            }
-        }
-        // Top
-        if (this.x > chunkX - chunkSize / 2 && this.x < chunkX + chunkSize / 2 && this.y - gridSize < chunkY - chunkSize / 2) {
-            let currentChunkValue = chunkMap.get([chunkX, chunkY - chunkSize].join(':'));
-            currentChunkValue.add(this);
-            chunkMap.set([chunkX, chunkY], currentChunkValue);
-        }
-        // Top right
-        if (this.x + this.r > chunkX + chunkSize / 2 &&
-            this.y - this.r < chunkY - chunkSize / 2) {
-            const topRightCornerX = chunkX + chunkSize / 2;
-            const topRightCornerY = chunkY - chunkSize / 2;
-            const polyRightCornerPosX = this.x + this.r;
-            const polyTopRightCornerPosY = this.y - this.r;        
-            const xProportion = (polyRightCornerPosX - topRightCornerX) / (this.r / 2);
-            const yProportion = (topRightCornerY - polyTopRightCornerPosY) / this.r;
-            if (xProportion + yProportion >= 1) {
-                let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                currentChunkValue.add(this);
-                chunkMap.set([chunkX, chunkY], currentChunkValue);
-            }
-        }
-        // Right
-        if (this.x + gridSize > chunkX + chunkSize / 2 && this.y > chunkY - chunkSize / 2 && this.y < chunkY + chunkSize / 2) {
-            let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY].join(':'));
-            currentChunkValue.add(this);
-            chunkMap.set([chunkX, chunkY], currentChunkValue);
-        }
-        // Bottom right
-        if (this.x + this.r > chunkX + chunkSize / 2 &&
-            this.y + this.r > chunkY + chunkSize / 2) {
-            const bottomRightCornerX = chunkX + chunkSize / 2;
-            const bottomRightCornerY = chunkY + chunkSize / 2;
-            const polyRightCornerPosX = this.x + this.r;
-            const polyBottomRightCornerPosY = this.y + this.r;        
-            const xProportion = (polyRightCornerPosX - bottomRightCornerX) / (this.r / 2);
-            const yProportion = (polyBottomRightCornerPosY - bottomRightCornerY) / this.r;
-            if (xProportion + yProportion >= 1) {
-                let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                currentChunkValue.add(this);
-                chunkMap.set([chunkX, chunkY], currentChunkValue);
-            }
-        }
-        // Bottom
-        if (this.x > chunkX - chunkSize / 2 && this.x < chunkX + chunkSize / 2 && this.y + gridSize > chunkY + chunkSize / 2) {
-            let currentChunkValue = chunkMap.get([chunkX, chunkY + chunkSize].join(':'));
-            currentChunkValue.add(this);
-            chunkMap.set([chunkX, chunkY], currentChunkValue);
-        }
-        // Bottom left
-        if (this.x - this.r < chunkX - chunkSize / 2 &&
-            this.y + this.r > chunkY + chunkSize / 2) {
-            const bottomLeftCornerX = chunkX - chunkSize / 2;
-            const bottomLeftCornerY = chunkY + chunkSize / 2;
-            const polyLeftCornerPosX = this.x - this.r;
-            const polyBottomLeftCornerPosY = this.y + this.r;        
-            const xProportion = (bottomLeftCornerX - polyLeftCornerPosX) / (this.r / 2);
-            const yProportion = (polyBottomLeftCornerPosY - bottomLeftCornerY) / this.r;
-            if (xProportion + yProportion >= 1) {
-                let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                currentChunkValue.add(this);
-                chunkMap.set([chunkX, chunkY], currentChunkValue);
-            }
-        }
-        // Left
-        if (this.x - gridSize < chunkX - chunkSize / 2 && this.y > chunkY - chunkSize / 2 && this.y < chunkY + chunkSize / 2) {
-            let currentChunkValue = chunkMap.get([chunkX - chunkSize, chunkY].join(':'));
-            currentChunkValue.add(this);
-            chunkMap.set([chunkX, chunkY], currentChunkValue);
-        }
-    }
-
-    hover(mouseX, mouseY) {
-        let bottomLeftExtraX = (mouseX - (this.x - this.r)) / (this.r / 2);
-        let bottomLeftExtraY = ((this.y + this.r) - mouseY) / this.r;
-        
-        let topLeftExtraX = (mouseX - (this.x - this.r)) / (this.r / 2);
-        let topLeftExtraY = (mouseY - (this.y - this.r)) / this.r;
-        
-        let topRightExtraX = ((this.x + this.r) - mouseX) / (this.r / 2);
-        let topRightExtraY = (mouseY - (this.y - this.r)) / this.r;
-        
-        let bottomRightExtraX = ((this.x + this.r) - mouseX) / (this.r / 2);
-        let bottomRightExtraY = ((this.y + this.r) - mouseY) / this.r;
-
-        if (bottomLeftExtraX + bottomLeftExtraY >= 1 &&
-            topLeftExtraX + topLeftExtraY >= 1 && 
-            topRightExtraX + topRightExtraY >= 1 &&
-            bottomRightExtraX + bottomRightExtraY >= 1 && 
-            mouseY > this.y - this.r && 
-            mouseY < this.y + this.r) {
-                    this.drawFill(this.brightenColor());
-                    this.drawOutlines();
-                    for (let node = this.next; node !== null; node = node.next) {
-                        node.drawFill(this.brightenColor());
-                        node.drawOutlines();
-                    }
-                    for (let node = this.prev; node !== null; node = node.prev) {
-                        node.drawFill(this.brightenColor());
-                        node.drawOutlines();
-                    }
-                } else {
-                    this.drawFill();
-                    this.drawOutlines();
-                }       
-        }
-
+    
     brightenColor() {
         let hex = this.teamColor.replace(/^#/, '');
 
