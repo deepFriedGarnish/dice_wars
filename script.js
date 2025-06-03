@@ -46,7 +46,7 @@ for (let i = 0; i < map.length; i++){
     map[i].drawOutlines();
 }
 
-let lastChunkKey = '50:50';
+let lastChunkKey = `${chunkSize/2}:${chunkSize/2}`;
 canvas.addEventListener('mousemove', (event) => {
     const mouseX = event.offsetX;
     const mouseY = event.offsetY;
