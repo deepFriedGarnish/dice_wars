@@ -1,0 +1,14 @@
+window.gridSize = 15;
+window.gridWidth = 50;
+window.gridHeight = 50;
+window.gridBorderSize = 2;
+window.islandSize = 10;
+window.islandCount = 3;
+window.teamCount = 10;
+window.teamColours = [];
+window.polygonArr = [];
+window.offset = 0;
+window.neighbourConstant = (gridSize * 2 - (gridSize / 2.025));
+window.chunkMap = new Map();
+window.chunkSize = 100;
+window.highlightedPolygons = [];
