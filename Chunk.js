@@ -12,4 +12,10 @@ export class Chunk {
             this.islands[i].hover(mouseX, mouseY);
         }
     }
+
+    checkForClick() {
+        for (let i = 0; i < this.islands.length; i++) {
+            this.islands[i].click();
+        }
+    }
 }

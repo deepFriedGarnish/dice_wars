@@ -1,5 +1,32 @@
+@font-face {
+  font-family: 'MyFont';
+  src: url('./fonts/SupremeSpike-KVO8D.otf') format('opentype');
+}
+
 .canvas {
     border: 1px solid;
     border-color: black;
     border-radius: 5px;
+    width: 1000px; 
+    height: 700px;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+h2 {
+    font-family: 'MyFont';
+    font-size: xx-large;
+    margin-top: 50px;
+    padding: 10px;
 }
