@@ -2,6 +2,8 @@ export class Island {
     constructor(head) {
         this.head = head;
         this.highlighted = false;
+        this.selected = false;
+        this.neighbourIslands = [];
         this.assignToChildren();
         this.assignToChunks();
     }
@@ -157,12 +159,10 @@ export class Island {
         for (let node = this.head; node !== null; node = node.next) {
             let chunkX = node.x - (node.x % chunkSize) + chunkSize / 2;
             let chunkY = node.y - (node.y % chunkSize) + chunkSize / 2;
+            const key = [chunkX, chunkY].join(':');
             
-            let currentChunkValue = chunkMap.get([chunkX, chunkY].join(':'));
-            if (![...currentChunkValue.islands].includes(this)){
-                currentChunkValue.add(this);
-            }
-            chunkMap.set([chunkX, chunkY], currentChunkValue);
+            let currentChunkValue = chunkMap.get(key);
+            this.updateChunkValue(key, currentChunkValue);
     
             // Check other surrounding chunks, in case the polygon overlaps with neighbour chunks
             // Top left
@@ -176,10 +176,7 @@ export class Island {
                 const yProportion = (topLeftCornerY - polyTopLeftCornerPosY) / node.r;
                 if (xProportion + yProportion >= 1) {
                     let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                    if (![...currentChunkValue.islands].includes(this)){
-                        currentChunkValue.add(this);
-                    }   
-                    chunkMap.set([chunkX, chunkY], currentChunkValue);
+                    this.updateChunkValue([chunkX + chunkSize, chunkY + chunkSize].join(':'), currentChunkValue);
                 }
             }
             // Top
@@ -187,10 +184,7 @@ export class Island {
                  node.x < chunkX + chunkSize / 2 && 
                 node.y - gridSize < chunkY - chunkSize / 2) {
                 let currentChunkValue = chunkMap.get([chunkX, chunkY - chunkSize].join(':'));
-                if (![...currentChunkValue.islands].includes(this)){
-                    currentChunkValue.add(this);
-                } 
-                chunkMap.set([chunkX, chunkY], currentChunkValue);
+                this.updateChunkValue([chunkX, chunkY - chunkSize].join(':'), currentChunkValue);
             }
             // Top right
             if (node.x + node.r > chunkX + chunkSize / 2 &&
@@ -203,10 +197,7 @@ export class Island {
                 const yProportion = (topRightCornerY - polyTopRightCornerPosY) / node.r;
                 if (xProportion + yProportion >= 1) {
                     let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                    if (![...currentChunkValue.islands].includes(this)){
-                        currentChunkValue.add(this);
-                    } 
-                    chunkMap.set([chunkX, chunkY], currentChunkValue);
+                    this.updateChunkValue([chunkX + chunkSize, chunkY + chunkSize].join(':'), currentChunkValue);
                 }
             }
             // Right
@@ -214,10 +205,7 @@ export class Island {
                 node.y > chunkY - chunkSize / 2 &&
                 node.y < chunkY + chunkSize / 2) {
                 let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY].join(':'));
-                if (![...currentChunkValue.islands].includes(this)){
-                    currentChunkValue.add(this);
-                } 
-                chunkMap.set([chunkX, chunkY], currentChunkValue);
+                this.updateChunkValue([chunkX + chunkSize, chunkY].join(':'), currentChunkValue);
             }
             // Bottom right
             if (node.x + node.r > chunkX + chunkSize / 2 &&
@@ -230,10 +218,7 @@ export class Island {
                 const yProportion = (polyBottomRightCornerPosY - bottomRightCornerY) / node.r;
                 if (xProportion + yProportion >= 1) {
                     let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                    if (![...currentChunkValue.islands].includes(this)){
-                        currentChunkValue.add(this);
-                    } 
-                    chunkMap.set([chunkX, chunkY], currentChunkValue);
+                    this.updateChunkValue([chunkX + chunkSize, chunkY + chunkSize].join(':'), currentChunkValue);
                 }
             }
             // Bottom
@@ -241,10 +226,7 @@ export class Island {
                 node.x < chunkX + chunkSize / 2 && 
                 node.y + gridSize > chunkY + chunkSize / 2) {
                 let currentChunkValue = chunkMap.get([chunkX, chunkY + chunkSize].join(':'));
-                if (![...currentChunkValue.islands].includes(this)){
-                    currentChunkValue.add(this);
-                }
-                chunkMap.set([chunkX, chunkY], currentChunkValue);
+                this.updateChunkValue([chunkX, chunkY + chunkSize].join(':'), currentChunkValue);
             }
             // Bottom left
             if (node.x - node.r < chunkX - chunkSize / 2 &&
@@ -257,10 +239,7 @@ export class Island {
                 const yProportion = (polyBottomLeftCornerPosY - bottomLeftCornerY) / node.r;
                 if (xProportion + yProportion >= 1) {
                     let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                    if (![...currentChunkValue.islands].includes(this)){
-                        currentChunkValue.add(this);
-                    }
-                    chunkMap.set([chunkX, chunkY], currentChunkValue);
+                    this.updateChunkValue([chunkX + chunkSize, chunkY + chunkSize].join(':'), currentChunkValue);
                 }
             }
             // Left
@@ -268,10 +247,7 @@ export class Island {
                 node.y > chunkY - chunkSize / 2 && 
                 node.y < chunkY + chunkSize / 2) {
                 let currentChunkValue = chunkMap.get([chunkX - chunkSize, chunkY].join(':'));
-                if (![...currentChunkValue.islands].includes(this)){
-                    currentChunkValue.add(this);
-                }
-                chunkMap.set([chunkX, chunkY], currentChunkValue);
+                this.updateChunkValue([chunkX - chunkSize, chunkY].join(':'), currentChunkValue);
             }
         }
     }
@@ -297,16 +273,45 @@ export class Island {
                 break;
             }
         }
+        if (!this.selected && selectedIsland === null) {
+            if (this.highlighted) {
+                for (let i = this.head; i !== null; i = i.next){
+                    i.drawFill(i.brightenColor());
+                    i.drawOutlines();
+                }
+            } else {
+                for (let i = this.head; i !== null; i = i.next){
+                    i.drawFill();
+                    i.drawOutlines();
+                }
+            }
+        }
+    }
+
+    click() {
         if (this.highlighted) {
-            for (let i = this.head; i !== null; i = i.next){
-                i.drawFill(i.brightenColor());
-                i.drawOutlines();
+            if (!this.selected && selectedIsland === null) {
+                this.selected = true;
+                for (let i = this.head; i !== null; i = i.next){
+                    i.drawFill('black');
+                    i.drawOutlines('red');
+                }
+                selectedIsland = this;
+            } else if (selectedIsland === this){
+                this.selected = false;
+                for (let i = this.head; i !== null; i = i.next){
+                    i.drawFill(i.brightenColor());
+                    i.drawOutlines();
+                }
+                selectedIsland = null;
             }
-        } else {
-            for (let i = this.head; i !== null; i = i.next){
-                i.drawFill();
-                i.drawOutlines();
-            }
+        }
+    }
+
+    updateChunkValue(key, value) {
+        if (![...value.islands].includes(this)){
+            value.add(this);
+            chunkMap.set(key, value);
         }
     }
 }

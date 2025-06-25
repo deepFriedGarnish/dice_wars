@@ -2,7 +2,8 @@ const canvas = document.getElementById('myCanvas');
 const ctx = canvas.getContext('2d');
 
 export class Polygon{
-    constructor(x, y, r, team, teamColor) {
+    constructor(id, x, y, r, team, teamColor) {
+        this.id = id;
         this.x = x;
         this.y = y;
         this.r = r;
@@ -18,47 +19,47 @@ export class Polygon{
     // Draws the polygon inside on the canvas
     drawFill(color = this.teamColor) {
         ctx.fillStyle = color;
-        ctx.strokeColor = this.strokeColor;
         ctx.lineWidth = this.lineWidth;
         ctx.beginPath();
-        ctx.moveTo(this.x  - this.r/2 + offset, this.y - this.r + offset);
-        ctx.lineTo(this.x + this.r/2 + offset, this.y - this.r + offset);
-        ctx.lineTo(this.x + this.r + offset, this.y + offset);
-        ctx.lineTo(this.x + this.r/2 + offset, this.y + this.r + offset);
-        ctx.lineTo(this.x - this.r/2 + offset, this.y + this.r + offset);
-        ctx.lineTo(this.x - this.r + offset, this.y + offset);
+        ctx.moveTo(this.x  - this.r/2, this.y - this.r);
+        ctx.lineTo(this.x + this.r/2, this.y - this.r);
+        ctx.lineTo(this.x + this.r, this.y);
+        ctx.lineTo(this.x + this.r/2, this.y + this.r);
+        ctx.lineTo(this.x - this.r/2, this.y + this.r);
+        ctx.lineTo(this.x - this.r, this.y);
         ctx.closePath();
         ctx.fill();
     }
 
     // Draws a specified outline on the canvas
-    drawOutline(type) {
-        ctx.beginPath();
+    drawOutline(type, color, margin = 0) {
+        ctx.strokeStyle = color;
         ctx.lineWidth = gridBorderSize;
+        ctx.beginPath();
         switch (type){
             case 'top-left':
-                ctx.moveTo(this.x - gridSize + offset, this.y + offset);
-                ctx.lineTo(this.x - gridSize / 2 + offset, this.y - gridSize + offset);
+                ctx.moveTo(this.x - gridSize - margin, this.y);
+                ctx.lineTo(this.x - gridSize / 2, this.y - gridSize - margin);
                 break;
             case 'top-right':
-                ctx.moveTo(this.x + gridSize / 2 + offset, this.y - gridSize + offset);
-                ctx.lineTo(this.x + gridSize + offset, this.y + offset);
+                ctx.moveTo(this.x + gridSize / 2, this.y - gridSize - margin);
+                ctx.lineTo(this.x + gridSize + margin, this.y);
                 break;
             case 'top':
-                ctx.moveTo(this.x - gridSize / 2 + offset, this.y - gridSize + offset);
-                ctx.lineTo(this.x + gridSize / 2 + offset, this.y - gridSize + offset);
+                ctx.moveTo(this.x - gridSize / 2, this.y - gridSize - margin);
+                ctx.lineTo(this.x + gridSize / 2, this.y - gridSize - margin);
                 break;
             case 'bottom':
-                ctx.moveTo(this.x - gridSize / 2 + offset, this.y + gridSize + offset);
-                ctx.lineTo(this.x + gridSize / 2 + offset, this.y + gridSize + offset);
+                ctx.moveTo(this.x - gridSize / 2, this.y + gridSize);
+                ctx.lineTo(this.x + gridSize / 2, this.y + gridSize);
                 break;
             case 'bottom-left':
-                ctx.moveTo(this.x - gridSize + offset, this.y + offset);
-                ctx.lineTo(this.x - gridSize / 2 + offset, this.y + gridSize + offset);
+                ctx.moveTo(this.x - gridSize, this.y);
+                ctx.lineTo(this.x - gridSize / 2, this.y + gridSize);
                 break;
             case 'bottom-right':
-                ctx.moveTo(this.x + gridSize / 2 + offset, this.y + gridSize + offset);
-                ctx.lineTo(this.x + gridSize + offset, this.y + offset);
+                ctx.moveTo(this.x + gridSize / 2, this.y + gridSize);
+                ctx.lineTo(this.x + gridSize, this.y);
                 break;
         };
         ctx.closePath();
@@ -93,7 +94,7 @@ export class Polygon{
         ).join('');
     }
 
-    drawOutlines() {
+    drawOutlines(color = 'black', margin = 0) {
         let options = ['top', 'top-right', 'bottom-right', 'bottom', 'bottom-left', 'top-left'];
         for (let i = 0; i < options.length; i++) {
             if (this.neighbours.some(obj => obj.side === options[i])) {
@@ -103,7 +104,7 @@ export class Polygon{
             }
         }
         for (let i = 0; i < options.length; i++) {
-            this.drawOutline(options[i]);
+            this.drawOutline(options[i], color, margin);
         }
     }
 }
