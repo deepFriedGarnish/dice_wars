@@ -175,8 +175,9 @@ export class Island {
                 const xProportion = (topLeftCornerX - polyLeftCornerPosX) / (node.r / 2);
                 const yProportion = (topLeftCornerY - polyTopLeftCornerPosY) / node.r;
                 if (xProportion + yProportion >= 1) {
-                    let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                    this.updateChunkValue([chunkX + chunkSize, chunkY + chunkSize].join(':'), currentChunkValue);
+                    let currKey = [chunkX - chunkSize, chunkY - chunkSize].join(':');
+                    let currentChunkValue = chunkMap.get(currKey);
+                    this.updateChunkValue(currKey, currentChunkValue);
                 }
             }
             // Top
@@ -196,16 +197,18 @@ export class Island {
                 const xProportion = (polyRightCornerPosX - topRightCornerX) / (node.r / 2);
                 const yProportion = (topRightCornerY - polyTopRightCornerPosY) / node.r;
                 if (xProportion + yProportion >= 1) {
-                    let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                    this.updateChunkValue([chunkX + chunkSize, chunkY + chunkSize].join(':'), currentChunkValue);
+                    let currKey = [chunkX + chunkSize, chunkY + chunkSize].join(':');
+                    let currentChunkValue = chunkMap.get(currKey);
+                    this.updateChunkValue(currKey, currentChunkValue);
                 }
             }
             // Right
             if (node.x + gridSize > chunkX + chunkSize / 2 &&
                 node.y > chunkY - chunkSize / 2 &&
                 node.y < chunkY + chunkSize / 2) {
-                let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY].join(':'));
-                this.updateChunkValue([chunkX + chunkSize, chunkY].join(':'), currentChunkValue);
+                let currKey = [chunkX + chunkSize, chunkY].join(':');
+                let currentChunkValue = chunkMap.get(currKey);
+                this.updateChunkValue(currKey, currentChunkValue);
             }
             // Bottom right
             if (node.x + node.r > chunkX + chunkSize / 2 &&
@@ -217,16 +220,18 @@ export class Island {
                 const xProportion = (polyRightCornerPosX - bottomRightCornerX) / (node.r / 2);
                 const yProportion = (polyBottomRightCornerPosY - bottomRightCornerY) / node.r;
                 if (xProportion + yProportion >= 1) {
-                    let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                    this.updateChunkValue([chunkX + chunkSize, chunkY + chunkSize].join(':'), currentChunkValue);
+                    let currKey = [chunkX + chunkSize, chunkY + chunkSize].join(':');
+                    let currentChunkValue = chunkMap.get(currKey);
+                    this.updateChunkValue(currKey, currentChunkValue);
                 }
             }
             // Bottom
             if (node.x > chunkX - chunkSize / 2 && 
                 node.x < chunkX + chunkSize / 2 && 
                 node.y + gridSize > chunkY + chunkSize / 2) {
-                let currentChunkValue = chunkMap.get([chunkX, chunkY + chunkSize].join(':'));
-                this.updateChunkValue([chunkX, chunkY + chunkSize].join(':'), currentChunkValue);
+                let currKey = [chunkX, chunkY + chunkSize].join(':');
+                let currentChunkValue = chunkMap.get(currKey);
+                this.updateChunkValue(currKey, currentChunkValue);
             }
             // Bottom left
             if (node.x - node.r < chunkX - chunkSize / 2 &&
@@ -238,16 +243,18 @@ export class Island {
                 const xProportion = (bottomLeftCornerX - polyLeftCornerPosX) / (node.r / 2);
                 const yProportion = (polyBottomLeftCornerPosY - bottomLeftCornerY) / node.r;
                 if (xProportion + yProportion >= 1) {
-                    let currentChunkValue = chunkMap.get([chunkX + chunkSize, chunkY + chunkSize].join(':'));
-                    this.updateChunkValue([chunkX + chunkSize, chunkY + chunkSize].join(':'), currentChunkValue);
+                    let currKey = [chunkX - chunkSize, chunkY + chunkSize].join(':');
+                    let currentChunkValue = chunkMap.get(currKey);
+                    this.updateChunkValue(currKey, currentChunkValue);
                 }
             }
             // Left
             if (node.x - gridSize < chunkX - chunkSize / 2 && 
                 node.y > chunkY - chunkSize / 2 && 
                 node.y < chunkY + chunkSize / 2) {
-                let currentChunkValue = chunkMap.get([chunkX - chunkSize, chunkY].join(':'));
-                this.updateChunkValue([chunkX - chunkSize, chunkY].join(':'), currentChunkValue);
+                let currKey = [chunkX - chunkSize, chunkY].join(':');
+                let currentChunkValue = chunkMap.get(currKey);
+                this.updateChunkValue(currKey, currentChunkValue);
             }
         }
     }
