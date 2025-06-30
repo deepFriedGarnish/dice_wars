@@ -1,11 +1,21 @@
 export class Island {
     constructor(head) {
         this.head = head;
+        this.neighbourIslands = [];
+        
+        // Variables for mouse hovering and clicking
         this.highlighted = false;
         this.selected = false;
-        this.neighbourIslands = [];
+        this.mouseInBounds = false;
+
+        this.diceCount = 1;
+        this.centerX = 0;
+        this.centerY = 0;
+
+        // Initial setup actions
         this.assignToChildren();
         this.assignToChunks();
+        this.findCenter();
     }
     
     draw() {
@@ -159,6 +169,7 @@ export class Island {
         for (let node = this.head; node !== null; node = node.next) {
             let chunkX = node.x - (node.x % chunkSize) + chunkSize / 2;
             let chunkY = node.y - (node.y % chunkSize) + chunkSize / 2;
+
             const key = [chunkX, chunkY].join(':');
             
             let currentChunkValue = chunkMap.get(key);
@@ -166,8 +177,8 @@ export class Island {
     
             // Check other surrounding chunks, in case the polygon overlaps with neighbour chunks
             // Top left
-            if (node.x - node.r < chunkX - chunkSize / 2 &&
-                node.y - node.r < chunkY - chunkSize / 2) {
+            if (node.x - node.r <= chunkX - chunkSize / 2 &&
+                node.y - node.r <= chunkY - chunkSize / 2) {
                 const topLeftCornerX = chunkX - chunkSize / 2;
                 const topLeftCornerY = chunkY - chunkSize / 2;
                 const polyLeftCornerPosX = node.x - node.r;
@@ -181,38 +192,39 @@ export class Island {
                 }
             }
             // Top
-            if (node.x > chunkX - chunkSize / 2 &&
-                 node.x < chunkX + chunkSize / 2 && 
-                node.y - gridSize < chunkY - chunkSize / 2) {
+            if (node.x >= chunkX - chunkSize / 2 &&
+                 node.x <= chunkX + chunkSize / 2 && 
+                node.y - gridSize <= chunkY - chunkSize / 2) {
                 let currentChunkValue = chunkMap.get([chunkX, chunkY - chunkSize].join(':'));
                 this.updateChunkValue([chunkX, chunkY - chunkSize].join(':'), currentChunkValue);
             }
             // Top right
-            if (node.x + node.r > chunkX + chunkSize / 2 &&
-                node.y - node.r < chunkY - chunkSize / 2) {
+            if (node.x + node.r >= chunkX + chunkSize / 2 &&
+                node.y - node.r <= chunkY - chunkSize / 2) {
+                // This gets the coordinates of the top right corner of the chunk grid we are currently in
                 const topRightCornerX = chunkX + chunkSize / 2;
                 const topRightCornerY = chunkY - chunkSize / 2;
                 const polyRightCornerPosX = node.x + node.r;
-                const polyTopRightCornerPosY = node.y - node.r;        
+                const polyTopRightCornerPosY = node.y - node.r;
                 const xProportion = (polyRightCornerPosX - topRightCornerX) / (node.r / 2);
                 const yProportion = (topRightCornerY - polyTopRightCornerPosY) / node.r;
                 if (xProportion + yProportion >= 1) {
-                    let currKey = [chunkX + chunkSize, chunkY + chunkSize].join(':');
+                    let currKey = [chunkX + chunkSize, chunkY - chunkSize].join(':');
                     let currentChunkValue = chunkMap.get(currKey);
                     this.updateChunkValue(currKey, currentChunkValue);
                 }
             }
             // Right
-            if (node.x + gridSize > chunkX + chunkSize / 2 &&
-                node.y > chunkY - chunkSize / 2 &&
-                node.y < chunkY + chunkSize / 2) {
+            if (node.x + gridSize >= chunkX + chunkSize / 2 &&
+                node.y >= chunkY - chunkSize / 2 &&
+                node.y <= chunkY + chunkSize / 2) {
                 let currKey = [chunkX + chunkSize, chunkY].join(':');
                 let currentChunkValue = chunkMap.get(currKey);
                 this.updateChunkValue(currKey, currentChunkValue);
             }
             // Bottom right
-            if (node.x + node.r > chunkX + chunkSize / 2 &&
-                node.y + node.r > chunkY + chunkSize / 2) {
+            if (node.x + node.r >= chunkX + chunkSize / 2 &&
+                node.y + node.r >= chunkY + chunkSize / 2) {
                 const bottomRightCornerX = chunkX + chunkSize / 2;
                 const bottomRightCornerY = chunkY + chunkSize / 2;
                 const polyRightCornerPosX = node.x + node.r;
@@ -226,16 +238,16 @@ export class Island {
                 }
             }
             // Bottom
-            if (node.x > chunkX - chunkSize / 2 && 
-                node.x < chunkX + chunkSize / 2 && 
-                node.y + gridSize > chunkY + chunkSize / 2) {
+            if (node.x >= chunkX - chunkSize / 2 && 
+                node.x <= chunkX + chunkSize / 2 && 
+                node.y + gridSize >= chunkY + chunkSize / 2) {
                 let currKey = [chunkX, chunkY + chunkSize].join(':');
                 let currentChunkValue = chunkMap.get(currKey);
                 this.updateChunkValue(currKey, currentChunkValue);
             }
             // Bottom left
-            if (node.x - node.r < chunkX - chunkSize / 2 &&
-                node.y + node.r > chunkY + chunkSize / 2) {
+            if (node.x - node.r <= chunkX - chunkSize / 2 &&
+                node.y + node.r >= chunkY + chunkSize / 2) {
                 const bottomLeftCornerX = chunkX - chunkSize / 2;
                 const bottomLeftCornerY = chunkY + chunkSize / 2;
                 const polyLeftCornerPosX = node.x - node.r;
@@ -249,9 +261,9 @@ export class Island {
                 }
             }
             // Left
-            if (node.x - gridSize < chunkX - chunkSize / 2 && 
-                node.y > chunkY - chunkSize / 2 && 
-                node.y < chunkY + chunkSize / 2) {
+            if (node.x - gridSize <= chunkX - chunkSize / 2 && 
+                node.y >= chunkY - chunkSize / 2 && 
+                node.y <= chunkY + chunkSize / 2) {
                 let currKey = [chunkX - chunkSize, chunkY].join(':');
                 let currentChunkValue = chunkMap.get(currKey);
                 this.updateChunkValue(currKey, currentChunkValue);
@@ -261,6 +273,7 @@ export class Island {
 
     hover(mouseX, mouseY) {
         this.highlighted = false;
+        this.mouseInBounds = false;
         for (let node = this.head; node !== null; node = node.next){
             let bottomLeftExtraX = (mouseX - (node.x - node.r)) / (node.r / 2);
             let bottomLeftExtraY = ((node.y + node.r) - mouseY) / node.r;
@@ -274,9 +287,10 @@ export class Island {
                 topLeftExtraX + topLeftExtraY >= 1 && 
                 topRightExtraX + topRightExtraY >= 1 &&
                 bottomRightExtraX + bottomRightExtraY >= 1 && 
-                mouseY > node.y - node.r && 
+                mouseY >= node.y - node.r && 
                 mouseY < node.y + node.r) {
                 this.highlighted = true;
+                this.mouseInBounds = true;
                 break;
             }
         }
@@ -313,6 +327,9 @@ export class Island {
                 selectedIsland = null;
             }
         }
+        if (this.mouseInBounds && this.neighbourIslands.some(island => island === selectedIsland)) {
+            console.log('NEIGHBOUR ATTACKED!')
+        }
     }
 
     updateChunkValue(key, value) {
@@ -320,5 +337,30 @@ export class Island {
             value.add(this);
             chunkMap.set(key, value);
         }
+    }
+
+    findCenter() {
+        let minX = 99999;
+        let maxX = 0;
+        let minY = 99999;
+        let maxY = 0;
+
+        for (let node = this.head; node !== null; node = node.next) {
+            if (node.x < minX) {
+                minX = node.x;
+            }
+            if (node.x >= maxX) {
+                maxX = node.x;
+            }
+            if (node.y < minY) {
+                minY = node.y;
+            }
+            if (node.y >= maxY) {
+                maxY = node.y;
+            }
+        }
+
+        this.centerX = minX + ((maxX - minX) / 2);
+        this.centerY = minY + ((maxY - minY) / 2);
     }
 }
