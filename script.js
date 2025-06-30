@@ -2,7 +2,8 @@ const canvas = document.getElementById('myCanvas');
 import { generateMap, 
     drawChunkSquare, 
     getRandomHexColor,
-    configureNeigboursForIslands
+    configureNeigboursForIslands,
+    drawDot
 } from './helperFunctions.js';
 import { Chunk } from './Chunk.js';
 
@@ -26,6 +27,7 @@ for (let i = 0; i < teamCount; i++) {
 
 // Generate empty polygon array
 const map = generateMap(polygonArr);
+configureNeigboursForIslands(polygonArr);
 
 // Draw chunk grid
 for (let i = 0; i < canvas.width; i += chunkSize){
@@ -81,5 +83,3 @@ canvas.addEventListener("click", function(event) {
 
     chunkMap.get([gridMouseX, gridMouseY].join(':')).checkForClick();
 });
-
-console.log(chunkMap);   

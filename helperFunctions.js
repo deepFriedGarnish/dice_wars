@@ -117,10 +117,10 @@ export function configureNeigboursForIslands(polygonArr) {
                                 ((posY >= 0 && posY < polygonArr.length))) {
                                 // Check if the neighbour is not an empty place
                                 if (polygonArr[posY][posX] !== 0) {
-                                    // Check if the neighbours team doesn't mach
+                                    // Check if the neighbours team doesn't match
                                     if (polygonArr[y][x].team !== polygonArr[posY][posX].team) {
                                         if (!polygonArr[y][x].island.neighbourIslands.some(island => island === polygonArr[posY][posX])) {
-                                            polygonArr[x][y].island.neighbourIslands.push(polygonArr[posY][posX].island);
+                                            polygonArr[y][x].island.neighbourIslands.push(polygonArr[posY][posX].island);
                                         }
                                         if (!polygonArr[posY][posX].island.neighbourIslands.some(island => island === polygonArr[y][x])) {
                                             polygonArr[posY][posX].island.neighbourIslands.push(polygonArr[y][x].island);
@@ -132,7 +132,37 @@ export function configureNeigboursForIslands(polygonArr) {
                     }
                 }
             } else {
-
+                // Check every posible direction
+                for (let dirX = 0; dirX < directions.length; dirX++) {
+                    for (let dirY = 0; dirY < directions.length; dirY++) {
+                        const xDir = directions[dirX];
+                        const yDir = directions[dirY];
+                        // Skip (0;0), (-1;-1) and (1;-1), because these positions are 
+                        // irrelevant for ODD column polygons 
+                        if (!(xDir === 0 && yDir === 0) &&
+                        !(xDir === -1 && yDir === -1) &&
+                        !(xDir === 1 && yDir === -1)) {
+                            // If checked position is in bounds
+                            const posX = x + xDir;
+                            const posY = y + yDir;
+                            if ((posX >= 0 && posX < polygonArr[y].length) &&
+                                ((posY >= 0 && posY < polygonArr.length))) {
+                                // Check if the neighbour is not an empty place
+                                if (polygonArr[posY][posX] !== 0) {
+                                    // Check if the neighbours team doesn't match
+                                    if (polygonArr[y][x].team !== polygonArr[posY][posX].team) {
+                                        if (!polygonArr[y][x].island.neighbourIslands.some(island => island === polygonArr[posY][posX])) {
+                                            polygonArr[y][x].island.neighbourIslands.push(polygonArr[posY][posX].island);
+                                        }
+                                        if (!polygonArr[posY][posX].island.neighbourIslands.some(island => island === polygonArr[y][x])) {
+                                            polygonArr[posY][posX].island.neighbourIslands.push(polygonArr[y][x].island);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
