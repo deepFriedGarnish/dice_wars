@@ -1,6 +1,13 @@
+import {
+    changeHex
+} from './helperFunctions.js';
+import { Dice } from './Dice.js';
+
 export class Island {
-    constructor(head) {
+    constructor(head, team, teamColour) {
         this.head = head;
+        this.team = team;
+        this.teamColour = teamColour;
         this.neighbourIslands = [];
         
         // Variables for mouse hovering and clicking
@@ -8,7 +15,7 @@ export class Island {
         this.selected = false;
         this.mouseInBounds = false;
 
-        this.diceCount = 1;
+        this.dices = [];
         this.centerX = 0;
         this.centerY = 0;
 
@@ -16,14 +23,30 @@ export class Island {
         this.assignToChildren();
         this.assignToChunks();
         this.findCenter();
+        this.setUpDices();
     }
     
     draw() {
         for (let nextNode = this.head; nextNode !== null; nextNode = nextNode.next) {
             if (nextNode !== null) {
-                nextNode.drawFill();
+                nextNode.drawFill(this.teamColour);
             } else {
                 return;
+            }
+        }
+        this.drawDices();
+    }
+
+    drawDices() {
+        for (let x = 0; x < 2; x++) {
+            for (let y = 0; y < 5; y++) {
+                if (x * 5 + y >= this.dices.length) {
+                    return;
+                }
+                let r = 20;
+                let currX = this.centerX - r / 2 + r * x;
+                let currY = this.centerY + (3 * r) - r * (y + 1);
+                this.dices[x * 5 + y].draw(currX, currY, r, 2, changeHex(this.teamColour, -40), 'black');
             }
         }
     }
@@ -297,7 +320,7 @@ export class Island {
         if (!this.selected && selectedIsland === null) {
             if (this.highlighted) {
                 for (let i = this.head; i !== null; i = i.next){
-                    i.drawFill(i.brightenColor());
+                    i.drawFill(changeHex(this.teamColour));
                     i.drawOutlines();
                 }
             } else {
@@ -306,6 +329,7 @@ export class Island {
                     i.drawOutlines();
                 }
             }
+            this.drawDices();
         }
     }
 
@@ -321,11 +345,12 @@ export class Island {
             } else if (selectedIsland === this){
                 this.selected = false;
                 for (let i = this.head; i !== null; i = i.next){
-                    i.drawFill(i.brightenColor());
+                    i.drawFill(changeHex(this.teamColour));
                     i.drawOutlines();
                 }
                 selectedIsland = null;
             }
+            this.drawDices();
         }
         if (this.mouseInBounds && this.neighbourIslands.some(island => island === selectedIsland)) {
             console.log('NEIGHBOUR ATTACKED!')
@@ -362,5 +387,12 @@ export class Island {
 
         this.centerX = minX + ((maxX - minX) / 2);
         this.centerY = minY + ((maxY - minY) / 2);
+    }
+
+    setUpDices() {
+        let r = 1 + Math.floor(Math.random() * 10);
+        for (let i = 0; i < r; i++) {
+            this.dices.push(new Dice());
+        }
     }
 }
