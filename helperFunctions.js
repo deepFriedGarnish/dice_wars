@@ -3,10 +3,10 @@ const ctx = canvas.getContext('2d');
 import { Polygon } from './Polygon.js';
 import { Island } from './Island.js';
 
-export function drawDot(x, y, r) {
+export function drawDot(x, y, r, color) {
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2); // Draw a circle (dot)
-    ctx.fillStyle = 'red'; // Set fill color to red
+    ctx.fillStyle = color; // Set fill color to red
     ctx.fill(); // Fill the circle with the color
     ctx.closePath();
 }
@@ -19,6 +19,20 @@ export function drawChunkSquare(x, y) {
     ctx.lineTo(x + chunkSize, y);
     ctx.lineTo(x + chunkSize, y + chunkSize);
     ctx.lineTo(x, y + chunkSize);
+    ctx.closePath();
+    ctx.stroke();
+}
+
+export function drawSquare(x, y, r, lineWidth, fillColor, lineColor) {
+    ctx.lineWidth = lineWidth;
+    ctx.fillStyle = fillColor;
+    ctx.strokeStyle = lineColor;
+    ctx.beginPath();
+    ctx.moveTo(x - r/2, y - r/2);
+    ctx.lineTo(x + r/2, y - r/2);
+    ctx.lineTo(x + r/2, y + r/2);
+    ctx.lineTo(x - r/2, y + r/2);
+    ctx.fill();
     ctx.closePath();
     ctx.stroke();
 }
@@ -58,9 +72,7 @@ export function generateMap(polygonArr) {
                         currentId,
                         currentX * neighbourConstant + gridSize + offset, 
                         currentY * gridSize * 2 + gridSize + (currentX % 2 > 0 ? gridSize : 0) + offset,
-                        gridSize,
-                        team,
-                        teamColours[team],
+                        gridSize
                     );
                     currentIsland.push(newPolygon);
                     polygonArr[currentY][currentX] = newPolygon;
@@ -81,7 +93,7 @@ export function generateMap(polygonArr) {
                 for (let j = 1; j < currentIsland.length; j++) {
                     headOfIsland.add(currentIsland[j]);
                 }
-                allIslands.push(new Island(headOfIsland));
+                allIslands.push(new Island(headOfIsland, team, teamColours[team]));
             }
         }
     }
@@ -118,7 +130,7 @@ export function configureNeigboursForIslands(polygonArr) {
                                 // Check if the neighbour is not an empty place
                                 if (polygonArr[posY][posX] !== 0) {
                                     // Check if the neighbours team doesn't match
-                                    if (polygonArr[y][x].team !== polygonArr[posY][posX].team) {
+                                    if (polygonArr[y][x].island.team !== polygonArr[posY][posX].island.team) {
                                         if (!polygonArr[y][x].island.neighbourIslands.some(island => island === polygonArr[posY][posX])) {
                                             polygonArr[y][x].island.neighbourIslands.push(polygonArr[posY][posX].island);
                                         }
@@ -150,7 +162,7 @@ export function configureNeigboursForIslands(polygonArr) {
                                 // Check if the neighbour is not an empty place
                                 if (polygonArr[posY][posX] !== 0) {
                                     // Check if the neighbours team doesn't match
-                                    if (polygonArr[y][x].team !== polygonArr[posY][posX].team) {
+                                    if (polygonArr[y][x].island.team !== polygonArr[posY][posX].island.team) {
                                         if (!polygonArr[y][x].island.neighbourIslands.some(island => island === polygonArr[posY][posX])) {
                                             polygonArr[y][x].island.neighbourIslands.push(polygonArr[posY][posX].island);
                                         }
@@ -166,4 +178,36 @@ export function configureNeigboursForIslands(polygonArr) {
             }
         }
     }
+}
+
+export function changeHex(color, amount = 20) {
+    // Remove # if present
+    let hex = color.replace(/^#/, '');
+
+    // Parse r, g, b values
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+
+    
+    
+    // Subtract amount, clamp to 0
+    r = Math.max(0, r + amount);
+    g = Math.max(0, g + amount);
+    b = Math.max(0, b + amount);
+
+    if (r > 254) {
+        r = 254;
+    }
+    if (g > 254) {
+        g = 254;
+    }
+    if (b > 254) {
+        b = 254;
+    }
+    
+    // Convert back to hex and pad with 0 if needed
+    const toHex = (c) => c.toString(16).padStart(2, '0');
+
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
