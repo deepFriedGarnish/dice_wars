@@ -2,8 +2,7 @@ const canvas = document.getElementById('myCanvas');
 const ctx = canvas.getContext('2d');
 
 export class Polygon{
-    constructor(id, x, y, r) {
-        this.id = id;
+    constructor(x, y, r) {
         this.x = x;
         this.y = y;
         this.r = r;

@@ -58,7 +58,6 @@ export function generateMap(polygonArr) {
     let currentY = 0; // Current y position where a new poly is created
     let allIslands = []; // All islands in the map
     let currentIsland;
-    let currentId = 1;
 
     // If islandCount = 3, then each team will have 3 islands each.
     for (let island = 0; island < islandCount; island++){
@@ -69,14 +68,12 @@ export function generateMap(polygonArr) {
             for (let i = 0; i < islandSize; i++) {
                 if (polygonArr[currentY][currentX] === 0){
                     let newPolygon = new Polygon(
-                        currentId,
                         currentX * neighbourConstant + gridSize + offset, 
                         currentY * gridSize * 2 + gridSize + (currentX % 2 > 0 ? gridSize : 0) + offset,
                         gridSize
                     );
                     currentIsland.push(newPolygon);
                     polygonArr[currentY][currentX] = newPolygon;
-                    currentId += 1;
                 }
                 const xDirection = Math.floor(Math.random() * 3) - 1;
                 const yDirection = xDirection === 0 ? (Math.random() < 0.5 ? -1 : 1) : 0;
@@ -129,14 +126,13 @@ export function configureNeigboursForIslands(polygonArr) {
                                 ((posY >= 0 && posY < polygonArr.length))) {
                                 // Check if the neighbour is not an empty place
                                 if (polygonArr[posY][posX] !== 0) {
-                                    // Check if the neighbours team doesn't match
-                                    if (polygonArr[y][x].island.team !== polygonArr[posY][posX].island.team) {
-                                        if (!polygonArr[y][x].island.neighbourIslands.some(island => island === polygonArr[posY][posX])) {
-                                            polygonArr[y][x].island.neighbourIslands.push(polygonArr[posY][posX].island);
-                                        }
-                                        if (!polygonArr[posY][posX].island.neighbourIslands.some(island => island === polygonArr[y][x])) {
-                                            polygonArr[posY][posX].island.neighbourIslands.push(polygonArr[y][x].island);
-                                        }
+                                    if (!polygonArr[y][x].island.neighbourIslands.some(island => island === polygonArr[posY][posX].island)) {
+                                        polygonArr[y][x].island.neighbourIslands.push(polygonArr[posY][posX].island);
+                                        continue;
+                                    }
+                                    if (!polygonArr[posY][posX].island.neighbourIslands.some(island => island === polygonArr[y][x].island)) {
+                                        polygonArr[posY][posX].island.neighbourIslands.push(polygonArr[y][x].island);
+                                        continue;
                                     }
                                 }
                             }
@@ -161,14 +157,11 @@ export function configureNeigboursForIslands(polygonArr) {
                                 ((posY >= 0 && posY < polygonArr.length))) {
                                 // Check if the neighbour is not an empty place
                                 if (polygonArr[posY][posX] !== 0) {
-                                    // Check if the neighbours team doesn't match
-                                    if (polygonArr[y][x].island.team !== polygonArr[posY][posX].island.team) {
-                                        if (!polygonArr[y][x].island.neighbourIslands.some(island => island === polygonArr[posY][posX])) {
-                                            polygonArr[y][x].island.neighbourIslands.push(polygonArr[posY][posX].island);
-                                        }
-                                        if (!polygonArr[posY][posX].island.neighbourIslands.some(island => island === polygonArr[y][x])) {
-                                            polygonArr[posY][posX].island.neighbourIslands.push(polygonArr[y][x].island);
-                                        }
+                                    if (!polygonArr[y][x].island.neighbourIslands.some(island => island === polygonArr[posY][posX].island)) {
+                                        polygonArr[y][x].island.neighbourIslands.push(polygonArr[posY][posX].island);
+                                    }
+                                    if (!polygonArr[posY][posX].island.neighbourIslands.some(island => island === polygonArr[y][x].island)) {
+                                        polygonArr[posY][posX].island.neighbourIslands.push(polygonArr[y][x].island);
                                     }
                                 }
                             }
@@ -210,4 +203,32 @@ export function changeHex(color, amount = 20) {
     const toHex = (c) => c.toString(16).padStart(2, '0');
 
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+export function redrawMap() {
+    for (let i = 0; i < canvas.width; i += chunkSize){
+        for (let j = 0; j < canvas.height; j += chunkSize){
+            drawSquare(i + chunkSize / 2, j + chunkSize / 2, chunkSize, 2, 'white', 'gray');
+        }
+    }
+    for (let i = 0; i < map.length; i++){
+        if (map[i] !== undefined){
+            map[i].draw();
+            map[i].drawOutlines();
+        }
+    }
+
+    for (let i = 0; i < map.length; i++){
+        if (map[i] !== undefined){
+            map[i].drawDices();
+        }
+    }
+}
+
+export function configureAllNeighbours() {
+    for (let i = 0; i < map.length; i++){
+        if (map[i] !== undefined){
+            map[i].configureNeigbours();
+        }
+    }
 }

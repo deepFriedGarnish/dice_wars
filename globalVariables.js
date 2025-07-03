@@ -9,6 +9,7 @@ window.teamColours = [];
 window.polygonArr = [];
 window.offset = 10;
 window.neighbourConstant = (gridSize * 2 - (gridSize / 2.025));
+window.map = [];
 window.chunkMap = new Map();
 window.chunkSize = 100; 
 window.highlightedPolygons = [];
