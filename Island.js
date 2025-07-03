@@ -1,5 +1,6 @@
 import {
-    changeHex
+    changeHex,
+    configureNeigboursForIslands
 } from './helperFunctions.js';
 import { Dice } from './Dice.js';
 
@@ -334,6 +335,7 @@ export class Island {
     }
 
     click() {
+        // Handling selecting and highlighting upon click
         if (this.highlighted) {
             if (!this.selected && selectedIsland === null) {
                 this.selected = true;
@@ -352,8 +354,37 @@ export class Island {
             }
             this.drawDices();
         }
-        if (this.mouseInBounds && this.neighbourIslands.some(island => island === selectedIsland)) {
-            console.log('NEIGHBOUR ATTACKED!')
+
+        // Handling attacking
+        if (selectedIsland !== null && this.mouseInBounds && this.neighbourIslands.some(island => island === selectedIsland)) {
+            // Defending island won
+            if (this.throwDice()) {
+                for (let i = selectedIsland.head; i !== null; i = i.next){
+                    i.drawFill();
+                    i.drawOutlines();
+                }
+                // The attacker island won
+            } else {
+                this.dices = selectedIsland.dices;
+                this.team = selectedIsland.team;
+                this.teamColour = selectedIsland.teamColour;
+                for (let i = this.head; i !== null; i = i.next){
+                    i.drawFill();
+                    i.drawOutlines();
+                }
+                this.drawDices();
+                this.neighbourIslands.splice(this.neighbourIslands.indexOf(selectedIsland));
+                selectedIsland.neighbourIslands.splice(selectedIsland.neighbourIslands.indexOf(this));
+                configureNeigboursForIslands(polygonArr);
+            }
+            for (let i = selectedIsland.head; i !== null; i = i.next){
+                i.drawFill();
+                i.drawOutlines();
+            }
+            selectedIsland.selected = false;
+            selectedIsland.resetDices();
+            selectedIsland.drawDices();
+            selectedIsland = null;
         }
     }
 
@@ -394,5 +425,28 @@ export class Island {
         for (let i = 0; i < r; i++) {
             this.dices.push(new Dice());
         }
+    }
+
+    throwDice() {
+        let currIslandScore = 0;
+        let selectedIslandScore = 0;
+
+        for (let i = 0; i < this.dices.length; i++) {
+            currIslandScore += 1 + Math.floor(Math.random() * 6);
+        }
+        for (let i = 0; i < selectedIsland.dices.length; i++) {
+            selectedIslandScore += 1 + Math.floor(Math.random() * 6);
+        }
+
+        if (currIslandScore >= selectedIslandScore) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    resetDices() {
+        this.dices = [];
+        this.dices.push(new Dice());
     }
 }
