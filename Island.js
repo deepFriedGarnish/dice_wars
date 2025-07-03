@@ -1,6 +1,7 @@
 import {
     changeHex,
-    configureNeigboursForIslands
+    configureNeigboursForIslands,
+    redrawMap
 } from './helperFunctions.js';
 import { Dice } from './Dice.js';
 
@@ -35,7 +36,6 @@ export class Island {
                 return;
             }
         }
-        this.drawDices();
     }
 
     drawDices() {
@@ -356,35 +356,25 @@ export class Island {
         }
 
         // Handling attacking
-        if (selectedIsland !== null && this.mouseInBounds && this.neighbourIslands.some(island => island === selectedIsland)) {
-            // Defending island won
-            if (this.throwDice()) {
-                for (let i = selectedIsland.head; i !== null; i = i.next){
-                    i.drawFill();
-                    i.drawOutlines();
-                }
+        if (selectedIsland !== null && 
+            selectedIsland.team !== this.team && 
+            this.mouseInBounds && 
+            this.neighbourIslands.some(island => island === selectedIsland)) {
+            if (!this.throwDice()) {
                 // The attacker island won
-            } else {
                 this.dices = selectedIsland.dices;
+                this.removeDice();
                 this.team = selectedIsland.team;
                 this.teamColour = selectedIsland.teamColour;
-                for (let i = this.head; i !== null; i = i.next){
-                    i.drawFill();
-                    i.drawOutlines();
-                }
-                this.drawDices();
                 this.neighbourIslands.splice(this.neighbourIslands.indexOf(selectedIsland));
                 selectedIsland.neighbourIslands.splice(selectedIsland.neighbourIslands.indexOf(this));
                 configureNeigboursForIslands(polygonArr);
-            }
-            for (let i = selectedIsland.head; i !== null; i = i.next){
-                i.drawFill();
-                i.drawOutlines();
             }
             selectedIsland.selected = false;
             selectedIsland.resetDices();
             selectedIsland.drawDices();
             selectedIsland = null;
+            redrawMap();
         }
     }
 
@@ -448,5 +438,11 @@ export class Island {
     resetDices() {
         this.dices = [];
         this.dices.push(new Dice());
+    }
+
+    removeDice() {
+        if (this.dices.length > 1){
+            this.dices.splice(this.dices.length - 1);
+        }
     }
 }
