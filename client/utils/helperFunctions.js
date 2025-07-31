@@ -1,9 +1,9 @@
 const canvas = document.getElementById('myCanvas');
 const ctx = canvas.getContext('2d');
-import { Polygon } from './Polygon.js';
-import { Island } from './Island.js';
+import { Polygon } from '../components/Polygon.js';
+import { Island } from '../components/Island.js';
 
-export function drawDot(x, y, r, color) {
+export function drawDot(ctx, x, y, r, color) {
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2); // Draw a circle (dot)
     ctx.fillStyle = color; // Set fill color to red
@@ -23,7 +23,7 @@ export function drawChunkSquare(x, y) {
     ctx.stroke();
 }
 
-export function drawSquare(x, y, r, lineWidth, fillColor, lineColor) {
+export function drawSquare(ctx, x, y, r, lineWidth, fillColor, lineColor) {
     ctx.lineWidth = lineWidth;
     ctx.fillStyle = fillColor;
     ctx.strokeStyle = lineColor;
@@ -41,7 +41,7 @@ export function getRandomHexColor() {
     return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 }
 
-export function maxResolution() {
+export function maxResolution(canvas, ctx) {
     const displayWidth = canvas.width;
     const displayHeight = canvas.height;
     const scale = window.devicePixelRatio || 1;
@@ -206,14 +206,16 @@ export function changeHex(color, amount = 20) {
 }
 
 export function redrawMap() {
-    for (let i = 0; i < canvas.width; i += chunkSize){
-        for (let j = 0; j < canvas.height; j += chunkSize){
-            drawSquare(i + chunkSize / 2, j + chunkSize / 2, chunkSize, 2, 'white', 'gray');
+    if (drawChunkGrid) {
+        for (let i = 0; i < canvas.width; i += chunkSize){
+            for (let j = 0; j < canvas.height; j += chunkSize){
+                drawSquare(ctx, i + chunkSize / 2, j + chunkSize / 2, chunkSize, 2, 'white', 'gray');
+            }
         }
     }
     for (let i = 0; i < map.length; i++){
         if (map[i] !== undefined){
-            map[i].draw();
+            map[i].drawNormal();
             map[i].drawOutlines();
         }
     }
@@ -230,5 +232,84 @@ export function configureAllNeighbours() {
         if (map[i] !== undefined){
             map[i].configureNeigbours();
         }
+    }
+}
+
+export function drawHighlightedIsland() {
+    if (previouslyHighlightedIsland !== null && highlightedIsland !== null) {
+        if (highlightedIsland !== previouslyHighlightedIsland) {
+            if (highlightedIsland !== null) {
+                highlightedIsland.drawHighlighted();
+            }
+            if (previouslyHighlightedIsland !== null && previouslyHighlightedIsland !== highlightedIsland) {
+                previouslyHighlightedIsland.drawNormal();
+            }
+        }
+    }
+}
+
+export function print(text) {
+    const p = document.getElementById('debug');
+    p.textContent = text;
+}
+
+export function print2(text) {
+    const p = document.getElementById('debug2');
+    p.textContent = text;
+}
+
+export function handleIslandSelection(key) {
+    selectedIsland = chunkMap.get(key).checkForClick();
+
+    if (selectedIsland !== null && previouslySelectedIsland === null) {
+        selectedIsland.drawSelected();
+        previouslySelectedIsland = selectedIsland;
+    }
+    if (selectedIsland === null && previouslySelectedIsland !== null) {
+        previouslySelectedIsland.drawNormal();
+        previouslySelectedIsland = null;
+    }
+}
+
+export function handleIslandHover(key, mouseX, mouseY) {
+    hoveredIsland = chunkMap.get(key).checkForHover(mouseX, mouseY);
+    if (previouslyHoveredIsland !== null){
+        if (selectedIsland === null) {
+            previouslyHoveredIsland.drawNormal();
+        }
+    }
+    if (hoveredIsland === null) {
+        previouslyHoveredIsland = null;
+    } else {
+        previouslyHoveredIsland = hoveredIsland;
+        if (selectedIsland === null) {
+            hoveredIsland.drawHighlighted();
+        }
+    }
+}
+
+export function handleIslandAttack() {
+    // Handling attacking
+    // So if there is an island selected and this island is attacked by it
+    if (selectedIsland !== null && 
+        hoveredIsland !== null && 
+        selectedIsland.team !== hoveredIsland.team && 
+        selectedIsland.neighbourIslands.some(island => island === hoveredIsland)) {
+        if (!hoveredIsland.throwDice()) {
+            // The attacker island won
+            hoveredIsland.dices = selectedIsland.dices;
+            hoveredIsland.removeDice();
+            hoveredIsland.team = selectedIsland.team;
+            hoveredIsland.teamColour = selectedIsland.teamColour;
+            hoveredIsland.neighbourIslands.splice(hoveredIsland.neighbourIslands.indexOf(selectedIsland));
+            selectedIsland.neighbourIslands.splice(selectedIsland.neighbourIslands.indexOf(hoveredIsland));
+            configureNeigboursForIslands(polygonArr);
+        }
+        selectedIsland.selected = false;
+        selectedIsland.resetDices();
+        selectedIsland.drawDices();
+        selectedIsland = null;
+        previouslySelectedIsland = null;
+        redrawMap();
     }
 }
