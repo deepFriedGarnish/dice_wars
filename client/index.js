@@ -3,9 +3,15 @@ import { generateMap,
     getRandomHexColor,
     configureNeigboursForIslands,
     configureAllNeighbours,
-    redrawMap
-} from './helperFunctions.js';
-import { Chunk } from './Chunk.js';
+    redrawMap,
+    handleIslandSelection,
+    handleIslandHover,
+    handleIslandAttack
+} from './utils/helperFunctions.js';
+import { Chunk } from './components/Chunk.js';
+import { DiceBoard } from './components/DiceBoard.js';
+
+const diceBoard = new DiceBoard();
 
 canvas.width = 1000;
 canvas.height = 700;
@@ -34,27 +40,30 @@ configureNeigboursForIslands(polygonArr);
 
 let lastChunkKey = `${chunkSize/2}:${chunkSize/2}`;
 canvas.addEventListener('mousemove', (event) => {
+    diceBoard.drawHoveredIslandDices();
+
     const mouseX = event.offsetX;
     const mouseY = event.offsetY;
 
     let gridMouseX = mouseX - (mouseX % chunkSize) + chunkSize / 2;
     let gridMouseY = mouseY - (mouseY % chunkSize) + chunkSize / 2;
-
+    
     if (gridMouseX >= canvas.width) {
         gridMouseX = gridMouseX - (gridMouseX % chunkSize) - chunkSize / 2;
     }
     if (gridMouseY >= canvas.height) {
         gridMouseY = gridMouseY - (gridMouseY % chunkSize) - chunkSize / 2;
     }
+    
+    handleIslandHover(lastChunkKey, mouseX, mouseY);
 
     if (lastChunkKey !== [gridMouseX, gridMouseY].join(':')) {
-        chunkMap.get(lastChunkKey).checkForHover(mouseX, mouseY);
         lastChunkKey = [gridMouseX, gridMouseY].join(':');
     }
-    chunkMap.get([gridMouseX, gridMouseY].join(':')).checkForHover(mouseX, mouseY);
 });
 
 canvas.addEventListener("click", function(event) {
+    diceBoard.drawHoveredIslandDices();
     const mouseX = event.offsetX;
     const mouseY = event.offsetY;
 
@@ -68,5 +77,7 @@ canvas.addEventListener("click", function(event) {
         gridMouseY = gridMouseY - (gridMouseY % chunkSize) - chunkSize / 2;
     }
 
-    chunkMap.get([gridMouseX, gridMouseY].join(':')).checkForClick();
+    const chunkKey = [gridMouseX, gridMouseY].join(':');
+    handleIslandSelection(chunkKey);
+    handleIslandAttack();
 });

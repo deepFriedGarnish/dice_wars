@@ -2,7 +2,8 @@ import {
     changeHex,
     configureNeigboursForIslands,
     redrawMap
-} from './helperFunctions.js';
+} from '../utils/helperFunctions.js';
+
 import { Dice } from './Dice.js';
 
 export class Island {
@@ -11,6 +12,7 @@ export class Island {
         this.team = team;
         this.teamColour = teamColour;
         this.neighbourIslands = [];
+        this.id = team + '_' + Math.floor(Math.random() * 10000);
         
         // Variables for mouse hovering and clicking
         this.highlighted = false;
@@ -26,16 +28,6 @@ export class Island {
         this.assignToChunks();
         this.findCenter();
         this.setUpDices();
-    }
-    
-    draw() {
-        for (let nextNode = this.head; nextNode !== null; nextNode = nextNode.next) {
-            if (nextNode !== null) {
-                nextNode.drawFill(this.teamColour);
-            } else {
-                return;
-            }
-        }
     }
 
     drawDices() {
@@ -296,8 +288,6 @@ export class Island {
     }
 
     hover(mouseX, mouseY) {
-        this.highlighted = false;
-        this.mouseInBounds = false;
         for (let node = this.head; node !== null; node = node.next){
             let bottomLeftExtraX = (mouseX - (node.x - node.r)) / (node.r / 2);
             let bottomLeftExtraY = ((node.y + node.r) - mouseY) / node.r;
@@ -313,68 +303,23 @@ export class Island {
                 bottomRightExtraX + bottomRightExtraY >= 1 && 
                 mouseY >= node.y - node.r && 
                 mouseY < node.y + node.r) {
-                this.highlighted = true;
-                this.mouseInBounds = true;
-                break;
+                return this;
             }
         }
-        if (!this.selected && selectedIsland === null) {
-            if (this.highlighted) {
-                for (let i = this.head; i !== null; i = i.next){
-                    i.drawFill(changeHex(this.teamColour));
-                    i.drawOutlines();
-                }
-            } else {
-                for (let i = this.head; i !== null; i = i.next){
-                    i.drawFill();
-                    i.drawOutlines();
-                }
-            }
-            this.drawDices();
-        }
+        return null;
     }
 
     click() {
-        // Handling selecting and highlighting upon click
-        if (this.highlighted) {
-            if (!this.selected && selectedIsland === null) {
-                this.selected = true;
-                for (let i = this.head; i !== null; i = i.next){
-                    i.drawFill('black');
-                    i.drawOutlines('red');
+        if (this === hoveredIsland) {
+            if (this !== selectedIsland && selectedIsland === null) {
+                return 0;
+            } else {
+                if (this === selectedIsland){
+                    return 1;
                 }
-                selectedIsland = this;
-            } else if (selectedIsland === this){
-                this.selected = false;
-                for (let i = this.head; i !== null; i = i.next){
-                    i.drawFill(changeHex(this.teamColour));
-                    i.drawOutlines();
-                }
-                selectedIsland = null;
             }
-            this.drawDices();
-        }
-
-        // Handling attacking
-        if (selectedIsland !== null && 
-            selectedIsland.team !== this.team && 
-            this.mouseInBounds && 
-            this.neighbourIslands.some(island => island === selectedIsland)) {
-            if (!this.throwDice()) {
-                // The attacker island won
-                this.dices = selectedIsland.dices;
-                this.removeDice();
-                this.team = selectedIsland.team;
-                this.teamColour = selectedIsland.teamColour;
-                this.neighbourIslands.splice(this.neighbourIslands.indexOf(selectedIsland));
-                selectedIsland.neighbourIslands.splice(selectedIsland.neighbourIslands.indexOf(this));
-                configureNeigboursForIslands(polygonArr);
-            }
-            selectedIsland.selected = false;
-            selectedIsland.resetDices();
-            selectedIsland.drawDices();
-            selectedIsland = null;
-            redrawMap();
+        } else {
+            return 2;
         }
     }
 
@@ -444,5 +389,29 @@ export class Island {
         if (this.dices.length > 1){
             this.dices.splice(this.dices.length - 1);
         }
+    }
+
+    drawNormal() {
+        for (let i = this.head; i !== null; i = i.next){
+            i.drawFill();
+            i.drawOutlines();
+        }
+        this.drawDices();
+    }
+
+    drawHighlighted() {
+        for (let i = this.head; i !== null; i = i.next){
+            i.drawFill(changeHex(this.teamColour));
+            i.drawOutlines();
+        }
+        this.drawDices();
+    }
+
+    drawSelected() {
+        for (let i = this.head; i !== null; i = i.next){
+            i.drawFill('black');
+            i.drawOutlines('red');
+        }
+        this.drawDices();
     }
 }
